@@ -1,5 +1,5 @@
 # OIDC Mock Provider for Development
-FROM node:24-alpine
+FROM node:24.18.0-alpine
 
 WORKDIR /app
 
