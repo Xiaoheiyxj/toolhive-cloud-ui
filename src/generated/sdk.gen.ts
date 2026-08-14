@@ -12,14 +12,9 @@ import type {
   DeleteV1SourcesByNameData,
   DeleteV1SourcesByNameErrors,
   DeleteV1SourcesByNameResponses,
-  GetHealthData,
-  GetHealthResponses,
   GetOpenapiJsonData,
   GetOpenapiJsonErrors,
   GetOpenapiJsonResponses,
-  GetReadinessData,
-  GetReadinessErrors,
-  GetReadinessResponses,
   GetRegistryByRegistryNameV01ServersByServerNameVersionsByVersionData,
   GetRegistryByRegistryNameV01ServersByServerNameVersionsByVersionErrors,
   GetRegistryByRegistryNameV01ServersByServerNameVersionsByVersionResponses,
@@ -29,6 +24,18 @@ import type {
   GetRegistryByRegistryNameV01ServersData,
   GetRegistryByRegistryNameV01ServersErrors,
   GetRegistryByRegistryNameV01ServersResponses,
+  GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameData,
+  GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameErrors,
+  GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameResponses,
+  GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameVersionsByVersionData,
+  GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameVersionsByVersionErrors,
+  GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameVersionsByVersionResponses,
+  GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameVersionsData,
+  GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameVersionsErrors,
+  GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameVersionsResponses,
+  GetRegistryByRegistryNameV01xDevToolhivePluginsData,
+  GetRegistryByRegistryNameV01xDevToolhivePluginsErrors,
+  GetRegistryByRegistryNameV01xDevToolhivePluginsResponses,
   GetRegistryByRegistryNameV01xDevToolhiveSkillsByNamespaceByNameData,
   GetRegistryByRegistryNameV01xDevToolhiveSkillsByNamespaceByNameErrors,
   GetRegistryByRegistryNameV01xDevToolhiveSkillsByNamespaceByNameResponses,
@@ -41,6 +48,12 @@ import type {
   GetRegistryByRegistryNameV01xDevToolhiveSkillsData,
   GetRegistryByRegistryNameV01xDevToolhiveSkillsErrors,
   GetRegistryByRegistryNameV01xDevToolhiveSkillsResponses,
+  GetV1EntriesByTypeByNameClaimsData,
+  GetV1EntriesByTypeByNameClaimsErrors,
+  GetV1EntriesByTypeByNameClaimsResponses,
+  GetV1MeData,
+  GetV1MeErrors,
+  GetV1MeResponses,
   GetV1RegistriesByNameData,
   GetV1RegistriesByNameEntriesData,
   GetV1RegistriesByNameEntriesErrors,
@@ -59,13 +72,12 @@ import type {
   GetV1SourcesData,
   GetV1SourcesErrors,
   GetV1SourcesResponses,
-  GetVersionData,
-  GetVersionResponses,
   PostV1EntriesData,
   PostV1EntriesErrors,
   PostV1EntriesResponses,
   PutV1EntriesByTypeByNameClaimsData,
   PutV1EntriesByTypeByNameClaimsErrors,
+  PutV1EntriesByTypeByNameClaimsResponses,
   PutV1RegistriesByNameData,
   PutV1RegistriesByNameErrors,
   PutV1RegistriesByNameResponses,
@@ -92,19 +104,6 @@ export type Options<
 };
 
 /**
- * Health check
- *
- * Check if the registry API is healthy
- */
-export const getHealth = <ThrowOnError extends boolean = false>(
-  options?: Options<GetHealthData, ThrowOnError>,
-) =>
-  (options?.client ?? client).get<GetHealthResponses, unknown, ThrowOnError>({
-    url: "/health",
-    ...options,
-  });
-
-/**
  * OpenAPI specification
  *
  * Get the OpenAPI 3.1.0 specification for this API
@@ -117,20 +116,6 @@ export const getOpenapiJson = <ThrowOnError extends boolean = false>(
     GetOpenapiJsonErrors,
     ThrowOnError
   >({ url: "/openapi.json", ...options });
-
-/**
- * Readiness check
- *
- * Check if the registry API is ready to serve requests
- */
-export const getReadiness = <ThrowOnError extends boolean = false>(
-  options?: Options<GetReadinessData, ThrowOnError>,
-) =>
-  (options?.client ?? client).get<
-    GetReadinessResponses,
-    GetReadinessErrors,
-    ThrowOnError
-  >({ url: "/readiness", ...options });
 
 /**
  * List servers in specific registry
@@ -150,10 +135,6 @@ export const getRegistryByRegistryNameV01Servers = <
     security: [{ name: "Authorization", type: "apiKey" }],
     url: "/registry/{registryName}/v0.1/servers",
     ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
   });
 
 /**
@@ -177,10 +158,6 @@ export const getRegistryByRegistryNameV01ServersByServerNameVersions = <
     security: [{ name: "Authorization", type: "apiKey" }],
     url: "/registry/{registryName}/v0.1/servers/{serverName}/versions",
     ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
   });
 
 /**
@@ -204,10 +181,95 @@ export const getRegistryByRegistryNameV01ServersByServerNameVersionsByVersion =
       security: [{ name: "Authorization", type: "apiKey" }],
       url: "/registry/{registryName}/v0.1/servers/{serverName}/versions/{version}",
       ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
+    });
+
+/**
+ * List plugins in registry
+ *
+ * List plugins in a registry (paginated, latest versions).
+ */
+export const getRegistryByRegistryNameV01xDevToolhivePlugins = <
+  ThrowOnError extends boolean = false,
+>(
+  options: Options<
+    GetRegistryByRegistryNameV01xDevToolhivePluginsData,
+    ThrowOnError
+  >,
+) =>
+  (options.client ?? client).get<
+    GetRegistryByRegistryNameV01xDevToolhivePluginsResponses,
+    GetRegistryByRegistryNameV01xDevToolhivePluginsErrors,
+    ThrowOnError
+  >({
+    security: [{ name: "Authorization", type: "apiKey" }],
+    url: "/registry/{registryName}/v0.1/x/dev.toolhive/plugins",
+    ...options,
+  });
+
+/**
+ * Get latest plugin version
+ *
+ * Get the latest version of a plugin by namespace and name.
+ */
+export const getRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByName =
+  <ThrowOnError extends boolean = false>(
+    options: Options<
+      GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameData,
+      ThrowOnError
+    >,
+  ) =>
+    (options.client ?? client).get<
+      GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameResponses,
+      GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameErrors,
+      ThrowOnError
+    >({
+      security: [{ name: "Authorization", type: "apiKey" }],
+      url: "/registry/{registryName}/v0.1/x/dev.toolhive/plugins/{namespace}/{name}",
+      ...options,
+    });
+
+/**
+ * List plugin versions
+ *
+ * List all versions of a plugin.
+ */
+export const getRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameVersions =
+  <ThrowOnError extends boolean = false>(
+    options: Options<
+      GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameVersionsData,
+      ThrowOnError
+    >,
+  ) =>
+    (options.client ?? client).get<
+      GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameVersionsResponses,
+      GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameVersionsErrors,
+      ThrowOnError
+    >({
+      security: [{ name: "Authorization", type: "apiKey" }],
+      url: "/registry/{registryName}/v0.1/x/dev.toolhive/plugins/{namespace}/{name}/versions",
+      ...options,
+    });
+
+/**
+ * Get specific plugin version
+ *
+ * Get a specific version of a plugin.
+ */
+export const getRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameVersionsByVersion =
+  <ThrowOnError extends boolean = false>(
+    options: Options<
+      GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameVersionsByVersionData,
+      ThrowOnError
+    >,
+  ) =>
+    (options.client ?? client).get<
+      GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameVersionsByVersionResponses,
+      GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameVersionsByVersionErrors,
+      ThrowOnError
+    >({
+      security: [{ name: "Authorization", type: "apiKey" }],
+      url: "/registry/{registryName}/v0.1/x/dev.toolhive/plugins/{namespace}/{name}/versions/{version}",
+      ...options,
     });
 
 /**
@@ -231,10 +293,6 @@ export const getRegistryByRegistryNameV01xDevToolhiveSkills = <
     security: [{ name: "Authorization", type: "apiKey" }],
     url: "/registry/{registryName}/v0.1/x/dev.toolhive/skills",
     ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
   });
 
 /**
@@ -258,10 +316,6 @@ export const getRegistryByRegistryNameV01xDevToolhiveSkillsByNamespaceByName = <
     security: [{ name: "Authorization", type: "apiKey" }],
     url: "/registry/{registryName}/v0.1/x/dev.toolhive/skills/{namespace}/{name}",
     ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
   });
 
 /**
@@ -284,10 +338,6 @@ export const getRegistryByRegistryNameV01xDevToolhiveSkillsByNamespaceByNameVers
       security: [{ name: "Authorization", type: "apiKey" }],
       url: "/registry/{registryName}/v0.1/x/dev.toolhive/skills/{namespace}/{name}/versions",
       ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
     });
 
 /**
@@ -310,16 +360,12 @@ export const getRegistryByRegistryNameV01xDevToolhiveSkillsByNamespaceByNameVers
       security: [{ name: "Authorization", type: "apiKey" }],
       url: "/registry/{registryName}/v0.1/x/dev.toolhive/skills/{namespace}/{name}/versions/{version}",
       ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
     });
 
 /**
  * Publish entry
  *
- * Publish a new server or skill entry. Exactly one of 'server' or 'skill' must be provided.
+ * Publish a new server, skill, or plugin entry. Exactly one of 'server', 'skill', or 'plugin' must be provided.
  */
 export const postV1Entries = <ThrowOnError extends boolean = false>(
   options: Options<PostV1EntriesData, ThrowOnError>,
@@ -338,6 +384,26 @@ export const postV1Entries = <ThrowOnError extends boolean = false>(
   });
 
 /**
+ * Get entry claims
+ *
+ * Get the claims for an API-published entry name within the managed source.
+ * Claims are stored at the entry-name level and are shared by every version of that name.
+ * Synced-source entries (git/api/file/kubernetes) are out of scope: their claims come from
+ * upstream (the source manifest or the `toolhive.stacklok.dev/authz-claims` annotation) and
+ * are surfaced through the `/v1/sources/{name}/entries` and `/v1/registries/{name}/entries` lists.
+ */
+export const getV1EntriesByTypeByNameClaims = <
+  ThrowOnError extends boolean = false,
+>(
+  options: Options<GetV1EntriesByTypeByNameClaimsData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    GetV1EntriesByTypeByNameClaimsResponses,
+    GetV1EntriesByTypeByNameClaimsErrors,
+    ThrowOnError
+  >({ url: "/v1/entries/{type}/{name}/claims", ...options });
+
+/**
  * Update entry claims
  *
  * Update claims for a published entry name
@@ -348,7 +414,7 @@ export const putV1EntriesByTypeByNameClaims = <
   options: Options<PutV1EntriesByTypeByNameClaimsData, ThrowOnError>,
 ) =>
   (options.client ?? client).put<
-    unknown,
+    PutV1EntriesByTypeByNameClaimsResponses,
     PutV1EntriesByTypeByNameClaimsErrors,
     ThrowOnError
   >({
@@ -377,14 +443,21 @@ export const deleteV1EntriesByTypeByNameVersionsByVersion = <
     DeleteV1EntriesByTypeByNameVersionsByVersionResponses,
     DeleteV1EntriesByTypeByNameVersionsByVersionErrors,
     ThrowOnError
-  >({
-    url: "/v1/entries/{type}/{name}/versions/{version}",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
+  >({ url: "/v1/entries/{type}/{name}/versions/{version}", ...options });
+
+/**
+ * Get current user info
+ *
+ * Returns the authenticated caller's identity and roles
+ */
+export const getV1Me = <ThrowOnError extends boolean = false>(
+  options?: Options<GetV1MeData, ThrowOnError>,
+) =>
+  (options?.client ?? client).get<
+    GetV1MeResponses,
+    GetV1MeErrors,
+    ThrowOnError
+  >({ url: "/v1/me", ...options });
 
 /**
  * List registries
@@ -398,14 +471,7 @@ export const getV1Registries = <ThrowOnError extends boolean = false>(
     GetV1RegistriesResponses,
     GetV1RegistriesErrors,
     ThrowOnError
-  >({
-    url: "/v1/registries",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options?.headers,
-    },
-  });
+  >({ url: "/v1/registries", ...options });
 
 /**
  * Delete registry
@@ -419,14 +485,7 @@ export const deleteV1RegistriesByName = <ThrowOnError extends boolean = false>(
     DeleteV1RegistriesByNameResponses,
     DeleteV1RegistriesByNameErrors,
     ThrowOnError
-  >({
-    url: "/v1/registries/{name}",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
+  >({ url: "/v1/registries/{name}", ...options });
 
 /**
  * Get registry
@@ -440,14 +499,7 @@ export const getV1RegistriesByName = <ThrowOnError extends boolean = false>(
     GetV1RegistriesByNameResponses,
     GetV1RegistriesByNameErrors,
     ThrowOnError
-  >({
-    url: "/v1/registries/{name}",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
+  >({ url: "/v1/registries/{name}", ...options });
 
 /**
  * Create or update registry
@@ -484,14 +536,7 @@ export const getV1RegistriesByNameEntries = <
     GetV1RegistriesByNameEntriesResponses,
     GetV1RegistriesByNameEntriesErrors,
     ThrowOnError
-  >({
-    url: "/v1/registries/{name}/entries",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
+  >({ url: "/v1/registries/{name}/entries", ...options });
 
 /**
  * List sources
@@ -505,14 +550,7 @@ export const getV1Sources = <ThrowOnError extends boolean = false>(
     GetV1SourcesResponses,
     GetV1SourcesErrors,
     ThrowOnError
-  >({
-    url: "/v1/sources",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options?.headers,
-    },
-  });
+  >({ url: "/v1/sources", ...options });
 
 /**
  * Delete source
@@ -526,14 +564,7 @@ export const deleteV1SourcesByName = <ThrowOnError extends boolean = false>(
     DeleteV1SourcesByNameResponses,
     DeleteV1SourcesByNameErrors,
     ThrowOnError
-  >({
-    url: "/v1/sources/{name}",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
+  >({ url: "/v1/sources/{name}", ...options });
 
 /**
  * Get source
@@ -547,14 +578,7 @@ export const getV1SourcesByName = <ThrowOnError extends boolean = false>(
     GetV1SourcesByNameResponses,
     GetV1SourcesByNameErrors,
     ThrowOnError
-  >({
-    url: "/v1/sources/{name}",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
+  >({ url: "/v1/sources/{name}", ...options });
 
 /**
  * Create or update source
@@ -589,24 +613,4 @@ export const getV1SourcesByNameEntries = <ThrowOnError extends boolean = false>(
     GetV1SourcesByNameEntriesResponses,
     GetV1SourcesByNameEntriesErrors,
     ThrowOnError
-  >({
-    url: "/v1/sources/{name}/entries",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
-
-/**
- * Version information
- *
- * Get version information about the registry API
- */
-export const getVersion = <ThrowOnError extends boolean = false>(
-  options?: Options<GetVersionData, ThrowOnError>,
-) =>
-  (options?.client ?? client).get<GetVersionResponses, unknown, ThrowOnError>({
-    url: "/version",
-    ...options,
-  });
+  >({ url: "/v1/sources/{name}/entries", ...options });
