@@ -86,6 +86,9 @@ test.describe("ToolHive Runtime read-only workloads", () => {
     await expect(authenticatedPage.getByText(WORKLOAD_NAME)).toBeVisible();
     await expect(authenticatedPage.getByText(PROXY_ENDPOINT)).toBeVisible();
     await expect(
+      authenticatedPage.getByTestId("runtime-workload-type"),
+    ).toHaveText("Workload type: Container");
+    await expect(
       authenticatedPage.getByTestId("runtime-workload-status"),
     ).toHaveText("running");
 
@@ -102,6 +105,9 @@ test.describe("ToolHive Runtime read-only workloads", () => {
     await expect(
       authenticatedPage.getByTestId("runtime-detail-endpoint"),
     ).toHaveText(PROXY_ENDPOINT);
+    await expect(
+      authenticatedPage.getByTestId("runtime-detail-type"),
+    ).toHaveText("Workload type: Container");
     await expect(authenticatedPage.getByText("streamable-http")).toBeVisible();
 
     await authenticatedPage.goto(`/runtime/workloads/${WORKLOAD_NAME}-missing`);

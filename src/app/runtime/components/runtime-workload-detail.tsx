@@ -6,20 +6,8 @@ import type {
 } from "@/lib/toolhive-runtime";
 import { BackToWorkloads, RuntimeStatusBadge } from "./runtime-states";
 
-function endpointFor(
-  workload?: RuntimeWorkload,
-  detail?: RuntimeWorkloadDetail,
-): string {
-  if (workload?.url) {
-    return workload.url;
-  }
-  if (detail?.host && detail.proxy_port) {
-    return `http://${detail.host}:${detail.proxy_port}`;
-  }
-  if (workload?.port) {
-    return `http://127.0.0.1:${workload.port}`;
-  }
-  return "Endpoint unavailable";
+function endpointFor(workload?: RuntimeWorkload): string {
+  return workload?.url || "Endpoint unavailable";
 }
 
 export function RuntimeWorkloadDetailView({
@@ -49,8 +37,16 @@ export function RuntimeWorkloadDetailView({
             <div>
               <span className="font-medium">Proxy endpoint:</span>{" "}
               <code data-testid="runtime-detail-endpoint">
-                {endpointFor(workload, detail)}
+                {endpointFor(workload)}
               </code>
+            </div>
+            <div data-testid="runtime-detail-type">
+              <span className="font-medium">Workload type:</span>{" "}
+              {workload
+                ? workload.remote
+                  ? "Remote"
+                  : "Container"
+                : "Unavailable"}
             </div>
             <div>
               <span className="font-medium">Transport:</span>{" "}
@@ -78,6 +74,14 @@ export function RuntimeWorkloadDetailView({
             <div>
               <span className="font-medium">Target port:</span>{" "}
               {detail.target_port || "None"}
+            </div>
+            <div>
+              <span className="font-medium">Proxy port:</span>{" "}
+              {detail.proxy_port || "None"}
+            </div>
+            <div>
+              <span className="font-medium">Host:</span>{" "}
+              {detail.host || "Unavailable"}
             </div>
             <div>
               <span className="font-medium">Network isolation:</span>{" "}

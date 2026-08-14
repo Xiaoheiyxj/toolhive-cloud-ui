@@ -46,7 +46,13 @@ describe("ToolHive Runtime client", () => {
 
     await expect(listRuntimeWorkloads()).resolves.toEqual({
       ok: true,
-      data: [{ name: "demo", url: "http://127.0.0.1:28190/mcp" }],
+      data: [
+        {
+          name: "demo",
+          url: "http://127.0.0.1:28190/mcp",
+          remote: false,
+        },
+      ],
     });
     await expect(getRuntimeWorkload("demo")).resolves.toEqual({
       ok: true,

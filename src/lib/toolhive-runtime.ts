@@ -15,36 +15,23 @@ export interface RuntimeWorkload {
   name: string;
   package?: string;
   url?: string;
-  port?: number;
   transport_type?: string;
   proxy_mode?: string;
   status?: RuntimeWorkloadStatus;
-  status_context?: string;
-  created_at?: string;
-  labels?: Record<string, string>;
   group?: string;
-  remote?: boolean;
-  started_at?: string;
+  remote: boolean;
 }
 
 export interface RuntimeWorkloadDetail {
   name?: string;
   image?: string;
   host?: string;
-  cmd_arguments?: string[];
   target_port?: number;
   proxy_port?: number;
-  env_vars?: Record<string, string>;
-  secrets?: string[];
-  volumes?: string[];
   transport?: string;
   proxy_mode?: string;
   network_isolation?: boolean;
-  trust_proxy_headers?: boolean;
-  tools?: string[];
-  tools_override?: string[];
   group?: string;
-  url?: string;
 }
 
 export type RuntimeErrorKind = "unavailable" | "not_found" | "invalid_response";
@@ -104,7 +91,26 @@ function parseWorkloadList(value: unknown): RuntimeWorkload[] {
       (workload): workload is Record<string, unknown> =>
         isObject(workload) && typeof workload.name === "string",
     )
-    .map((workload) => workload as unknown as RuntimeWorkload);
+    .map((workload) => ({
+      name: workload.name as string,
+      package:
+        typeof workload.package === "string" ? workload.package : undefined,
+      url: typeof workload.url === "string" ? workload.url : undefined,
+      transport_type:
+        typeof workload.transport_type === "string"
+          ? workload.transport_type
+          : undefined,
+      proxy_mode:
+        typeof workload.proxy_mode === "string"
+          ? workload.proxy_mode
+          : undefined,
+      status:
+        typeof workload.status === "string"
+          ? (workload.status as RuntimeWorkloadStatus)
+          : undefined,
+      group: typeof workload.group === "string" ? workload.group : undefined,
+      remote: workload.remote === true,
+    }));
 }
 
 function parseWorkloadDetail(value: unknown): RuntimeWorkloadDetail {

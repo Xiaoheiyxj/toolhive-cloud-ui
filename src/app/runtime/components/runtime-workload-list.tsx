@@ -11,13 +11,7 @@ import type { RuntimeWorkload } from "@/lib/toolhive-runtime";
 import { RuntimeEmptyState, RuntimeStatusBadge } from "./runtime-states";
 
 function endpointFor(workload: RuntimeWorkload): string {
-  if (workload.url) {
-    return workload.url;
-  }
-  if (workload.port) {
-    return `http://127.0.0.1:${workload.port}`;
-  }
-  return "Endpoint unavailable";
+  return workload.url || "Endpoint unavailable";
 }
 
 export function RuntimeWorkloadList({
@@ -59,6 +53,10 @@ export function RuntimeWorkloadList({
                     <code data-testid="runtime-workload-endpoint">
                       {endpointFor(workload)}
                     </code>
+                  </div>
+                  <div data-testid="runtime-workload-type">
+                    <span className="font-medium">Workload type:</span>{" "}
+                    {workload.remote ? "Remote" : "Container"}
                   </div>
                   <div className="text-muted-foreground">
                     Transport: {workload.transport_type || "unknown"}
