@@ -185,6 +185,27 @@ test("creates Container and Remote workloads and calls both proxies", async ({
   const remoteEndpoint = await authenticatedPage
     .getByTestId("runtime-detail-endpoint")
     .innerText();
+  let remoteStatus: APIResponse | undefined;
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    remoteStatus = await request.get(
+      new URL(
+        `/api/v1beta/workloads/${REMOTE_NAME}/status`,
+        runtimeUrl,
+      ).toString(),
+    );
+    const statusBody = (await remoteStatus.json()) as { status?: string };
+    if (statusBody.status === "running") break;
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+  if (!remoteStatus)
+    throw new Error("Remote workload status was not returned.");
+  runtimeRequests.push({
+    method: "GET",
+    url: remoteStatus.url(),
+    status: remoteStatus.status(),
+  });
+  expect(remoteStatus).toBeOK();
+  expect(await remoteStatus.json()).toEqual({ status: "running" });
   let remoteMcp = await mcpCall(request, remoteEndpoint, 1, "initialize", {
     protocolVersion: "2025-03-26",
     capabilities: {},
