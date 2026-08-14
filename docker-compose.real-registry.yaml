@@ -1,0 +1,19 @@
+# Isolated development overlay for the sibling Registry Server v1.5.1.
+# It does not modify the Registry checkout; it only avoids stale local
+# container-name/port/volume collisions from unrelated Compose projects.
+services:
+  postgres:
+    container_name: toolhive-cloud-ui-real-registry-postgres
+    ports: !override
+      - "18082:5432"
+    volumes: !override
+      - toolhive-cloud-ui-real-registry-postgres-data:/var/lib/postgresql/data
+      - ../toolhive-registry-server/docker/postgres-init.sh:/docker-entrypoint-initdb.d/init.sh:ro
+
+  registry-api:
+    container_name: toolhive-cloud-ui-real-registry-api
+    ports: !override
+      - "18081:8080"
+
+volumes:
+  toolhive-cloud-ui-real-registry-postgres-data:

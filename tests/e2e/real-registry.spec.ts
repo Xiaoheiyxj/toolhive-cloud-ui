@@ -1,7 +1,7 @@
 import { expect, test } from "./fixtures";
 
-const REGISTRY_API_BASE_URL =
-  process.env.REGISTRY_API_BASE_URL || "http://localhost:8080";
+const REGISTRY_API_BASE_URL = process.env.REGISTRY_API_BASE_URL;
+const REAL_REGISTRY_E2E = process.env.REAL_REGISTRY_E2E === "true";
 const REGISTRY_NAME = process.env.REGISTRY_NAME || "default";
 const SERVER_NAME = "io.github.stacklok/adb-mysql-mcp-server";
 const SERVER_TITLE = "adb-mysql-mcp-server";
@@ -22,6 +22,11 @@ test.describe("Real Registry Catalog and Detail", () => {
     authenticatedPage,
     request,
   }, testInfo) => {
+    if (!REAL_REGISTRY_E2E || !REGISTRY_API_BASE_URL) {
+      throw new Error(
+        "Real Registry E2E requires REAL_REGISTRY_E2E=true and REGISTRY_API_BASE_URL.",
+      );
+    }
     const diagnostics: DiagnosticEvent[] = [];
     const registryRequests: Array<{ url: string; status: number }> = [];
 
@@ -100,7 +105,11 @@ test.describe("Real Registry Catalog and Detail", () => {
 
     const evidence = {
       apiBaseUrl: REGISTRY_API_BASE_URL,
-      mswEnabled: false,
+      realRegistryMode: REAL_REGISTRY_E2E,
+      controlledWebServer: {
+        command: "pnpm start:e2e:real-registry",
+        reuseExistingServer: false,
+      },
       registryRequests,
       diagnostics,
     };
