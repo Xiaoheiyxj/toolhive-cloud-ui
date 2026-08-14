@@ -13,6 +13,20 @@ interface RuntimeWorkloadDetailPageProps {
   params: Promise<{ name: string }>;
 }
 
+async function findWorkloadWithCanonicalUrl(name: string) {
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const result = await listRuntimeWorkloads();
+    if (result.ok) {
+      const workload = result.data.find((candidate) => candidate.name === name);
+      if (workload?.url) return workload;
+    }
+    if (attempt < 4) {
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+  }
+  return undefined;
+}
+
 export default async function RuntimeWorkloadDetailPage({
   params,
 }: RuntimeWorkloadDetailPageProps) {
@@ -37,9 +51,12 @@ export default async function RuntimeWorkloadDetailPage({
     );
   }
 
-  const workload = listResult.ok
+  const initialWorkload = listResult.ok
     ? listResult.data.find((candidate) => candidate.name === name)
     : undefined;
+  const workload = initialWorkload?.url
+    ? initialWorkload
+    : await findWorkloadWithCanonicalUrl(name);
   const status = statusResult.ok ? statusResult.data : workload?.status;
 
   return (

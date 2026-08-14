@@ -16,6 +16,7 @@
     "test:e2e": "BETTER_AUTH_SECRET=e2e-test-secret-at-least-32-chars-long BETTER_AUTH_RATE_LIMIT=100 pnpm build && playwright test",
     "test:e2e:real-registry": "REAL_REGISTRY_E2E=true BETTER_AUTH_SECRET=e2e-test-secret-at-least-32-chars-long BETTER_AUTH_RATE_LIMIT=100 pnpm build && REAL_REGISTRY_E2E=true playwright test --config=playwright.real-registry.config.mts",
     "test:e2e:runtime": "BETTER_AUTH_SECRET=e2e-test-secret-at-least-32-chars-long BETTER_AUTH_RATE_LIMIT=100 pnpm build && playwright test --config=playwright.runtime.config.mts",
+    "test:e2e:runtime:create": "BETTER_AUTH_SECRET=e2e-test-secret-at-least-32-chars-long BETTER_AUTH_RATE_LIMIT=100 pnpm build && playwright test --config=playwright.runtime-create.config.mts",
     "test:e2e:ui": "BETTER_AUTH_SECRET=e2e-test-secret-at-least-32-chars-long BETTER_AUTH_RATE_LIMIT=100 pnpm build && playwright test --ui",
     "test:e2e:debug": "BETTER_AUTH_SECRET=e2e-test-secret-at-least-32-chars-long BETTER_AUTH_RATE_LIMIT=100 pnpm build && playwright test --debug",
     "start:e2e": "concurrently -n \"OIDC,Mock,Next\" -c \"blue,magenta,green\" \"pnpm oidc\" \"pnpm mock:server\" \"pnpm start\"",
