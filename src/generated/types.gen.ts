@@ -5,12 +5,123 @@ export type ClientOptions = {
 };
 
 /**
+ * API endpoint source
+ */
+export type GithubComStacklokToolhiveRegistryServerInternalConfigApiConfig = {
+  /**
+   * Endpoint is the base API URL (without path)
+   * The registry handler will append the appropriate paths for the MCP Registry API v0.1:
+   * - /v0.1/servers - List all servers
+   * - /v0.1/servers/{name}/versions - List server versions
+   * - /v0.1/servers/{name}/versions/{version} - Get specific version
+   * Example: "http://my-registry-api.default.svc.cluster.local/registry"
+   */
+  endpoint?: string;
+  /**
+   * Timeout is the per-request timeout for HTTP requests to the API endpoint
+   * Accepts a Go duration string (e.g., "30s", "1m"); must be > 0 and <= 5m
+   * Defaults to 10s if not specified
+   * Useful for public or occasionally-slow upstreams where the default is too aggressive
+   */
+  timeout?: string;
+};
+
+/**
+ * Local file or URL source
+ */
+export type GithubComStacklokToolhiveRegistryServerInternalConfigFileConfig = {
+  /**
+   * Data is the inline registry data as a JSON string
+   * Mutually exclusive with Path and URL - exactly one must be specified
+   * Useful for API-created registries where the data is provided directly
+   */
+  data?: string;
+  /**
+   * Path is the path to the registry.json file on the local filesystem
+   * Can be absolute or relative to the working directory
+   * Mutually exclusive with URL and Data - exactly one must be specified
+   */
+  path?: string;
+  /**
+   * Timeout is the timeout for HTTP requests when using URL
+   * Defaults to 30s if not specified
+   * Only applicable when URL is set
+   */
+  timeout?: string;
+  /**
+   * URL is the HTTP/HTTPS URL to fetch the registry file from
+   * Mutually exclusive with Path and Data - exactly one must be specified
+   * HTTPS is required unless the host is localhost or THV_REGISTRY_INSECURE_URL=true
+   */
+  url?: string;
+};
+
+/**
  * Filtering rules
  */
 export type GithubComStacklokToolhiveRegistryServerInternalConfigFilterConfig =
   {
     names?: GithubComStacklokToolhiveRegistryServerInternalConfigNameFilterConfig;
     tags?: GithubComStacklokToolhiveRegistryServerInternalConfigTagFilterConfig;
+  };
+
+/**
+ * Auth contains optional authentication for private repositories
+ */
+export type GithubComStacklokToolhiveRegistryServerInternalConfigGitAuthConfig =
+  {
+    /**
+     * PasswordFile is the path to a file containing the Git password/token
+     * Must be an absolute path; whitespace is trimmed from the content
+     */
+    passwordFile?: string;
+    /**
+     * Username is the Git username for HTTP Basic authentication
+     */
+    username?: string;
+  };
+
+/**
+ * Git repository source
+ */
+export type GithubComStacklokToolhiveRegistryServerInternalConfigGitConfig = {
+  auth?: GithubComStacklokToolhiveRegistryServerInternalConfigGitAuthConfig;
+  /**
+   * Branch is the Git branch to use (mutually exclusive with Tag and Commit)
+   */
+  branch?: string;
+  /**
+   * Commit is the Git commit SHA to use (mutually exclusive with Branch and Tag)
+   */
+  commit?: string;
+  /**
+   * Path is the path to the registry file within the repository
+   */
+  path?: string;
+  /**
+   * Repository is the Git repository URL (HTTP/HTTPS/SSH)
+   */
+  repository?: string;
+  /**
+   * Tag is the Git tag to use (mutually exclusive with Branch and Commit)
+   */
+  tag?: string;
+};
+
+/**
+ * Kubernetes discovery source
+ */
+export type GithubComStacklokToolhiveRegistryServerInternalConfigKubernetesConfig =
+  {
+    [key: string]: unknown;
+  };
+
+/**
+ * Managed registry (no sync)
+ */
+export type GithubComStacklokToolhiveRegistryServerInternalConfigManagedConfig =
+  {
+    [key: string]: unknown;
   };
 
 export type GithubComStacklokToolhiveRegistryServerInternalConfigNameFilterConfig =
@@ -28,6 +139,14 @@ export type GithubComStacklokToolhiveRegistryServerInternalConfigSourceType =
   | "file"
   | "managed"
   | "kubernetes";
+
+/**
+ * Sync schedule configuration
+ */
+export type GithubComStacklokToolhiveRegistryServerInternalConfigSyncPolicyConfig =
+  {
+    interval?: string;
+  };
 
 export type GithubComStacklokToolhiveRegistryServerInternalConfigTagFilterConfig =
   {
@@ -51,6 +170,68 @@ export type GithubComStacklokToolhiveRegistryServerInternalServiceEntryVersionIn
     version?: string;
   };
 
+export type GithubComStacklokToolhiveRegistryServerInternalServicePlugin = {
+  _meta?: {
+    [key: string]: unknown;
+  };
+  createdAt?: string;
+  description?: string;
+  icons?: Array<GithubComStacklokToolhiveRegistryServerInternalServicePluginIcon>;
+  id?: string;
+  isLatest?: boolean;
+  license?: string;
+  metadata?: {
+    [key: string]: unknown;
+  };
+  name?: string;
+  namespace?: string;
+  packages?: Array<GithubComStacklokToolhiveRegistryServerInternalServicePluginPackage>;
+  repository?: GithubComStacklokToolhiveRegistryServerInternalServicePluginRepository;
+  status?: string;
+  title?: string;
+  updatedAt?: string;
+  version?: string;
+};
+
+export type GithubComStacklokToolhiveRegistryServerInternalServicePluginIcon = {
+  label?: string;
+  size?: string;
+  src?: string;
+  type?: string;
+};
+
+export type GithubComStacklokToolhiveRegistryServerInternalServicePluginPackage =
+  {
+    commit?: string;
+    digest?: string;
+    identifier?: string;
+    mediaType?: string;
+    ref?: string;
+    registryType?: string;
+    subfolder?: string;
+    url?: string;
+  };
+
+export type GithubComStacklokToolhiveRegistryServerInternalServicePluginRepository =
+  {
+    type?: string;
+    url?: string;
+  };
+
+export type GithubComStacklokToolhiveRegistryServerInternalServiceRegistryCreateRequest =
+  {
+    /**
+     * Authorization claims
+     */
+    claims?: {
+      [key: string]: unknown;
+    };
+    /**
+     * ordered list of source names
+     */
+    sources?: Array<string>;
+  };
+
 export type GithubComStacklokToolhiveRegistryServerInternalServiceRegistryEntriesResponse =
   {
     entries?: Array<GithubComStacklokToolhiveRegistryServerInternalServiceRegistryEntryInfo>;
@@ -58,14 +239,22 @@ export type GithubComStacklokToolhiveRegistryServerInternalServiceRegistryEntrie
 
 export type GithubComStacklokToolhiveRegistryServerInternalServiceRegistryEntryInfo =
   {
+    createdAt?: string;
+    description?: string;
     entryType?: string;
     name?: string;
+    position?: number;
     sourceName?: string;
+    title?: string;
+    updatedAt?: string;
     version?: string;
   };
 
 export type GithubComStacklokToolhiveRegistryServerInternalServiceRegistryInfo =
   {
+    claims?: {
+      [key: string]: unknown;
+    };
     createdAt?: string;
     creationType?: GithubComStacklokToolhiveRegistryServerInternalServiceCreationType;
     name?: string;
@@ -123,6 +312,23 @@ export type GithubComStacklokToolhiveRegistryServerInternalServiceSkillRepositor
     url?: string;
   };
 
+export type GithubComStacklokToolhiveRegistryServerInternalServiceSourceCreateRequest =
+  {
+    api?: GithubComStacklokToolhiveRegistryServerInternalConfigApiConfig;
+    /**
+     * Authorization claims
+     */
+    claims?: {
+      [key: string]: unknown;
+    };
+    file?: GithubComStacklokToolhiveRegistryServerInternalConfigFileConfig;
+    filter?: GithubComStacklokToolhiveRegistryServerInternalConfigFilterConfig;
+    git?: GithubComStacklokToolhiveRegistryServerInternalConfigGitConfig;
+    kubernetes?: GithubComStacklokToolhiveRegistryServerInternalConfigKubernetesConfig;
+    managed?: GithubComStacklokToolhiveRegistryServerInternalConfigManagedConfig;
+    syncPolicy?: GithubComStacklokToolhiveRegistryServerInternalConfigSyncPolicyConfig;
+  };
+
 export type GithubComStacklokToolhiveRegistryServerInternalServiceSourceEntriesResponse =
   {
     entries?: Array<GithubComStacklokToolhiveRegistryServerInternalServiceSourceEntryInfo>;
@@ -148,10 +354,6 @@ export type GithubComStacklokToolhiveRegistryServerInternalServiceSourceInfo = {
   createdAt?: string;
   creationType?: GithubComStacklokToolhiveRegistryServerInternalServiceCreationType;
   filterConfig?: GithubComStacklokToolhiveRegistryServerInternalConfigFilterConfig;
-  /**
-   * toolhive or upstream
-   */
-  format?: string;
   name?: string;
   /**
    * Type-specific source configuration
@@ -186,7 +388,7 @@ export type GithubComStacklokToolhiveRegistryServerInternalServiceSourceSyncStat
      */
     lastAttempt?: string;
     /**
-     * Last successful sync
+     * Last completed sync attempt
      */
     lastSyncTime?: string;
     /**
@@ -198,37 +400,57 @@ export type GithubComStacklokToolhiveRegistryServerInternalServiceSourceSyncStat
      */
     phase?: string;
     /**
+     * Number of plugins in registry
+     */
+    pluginCount?: number;
+    /**
      * Number of servers in registry
      */
     serverCount?: number;
+    /**
+     * Number of skills in registry
+     */
+    skillCount?: number;
   };
 
-export type InternalApiHealthResponse = {
-  status?: string;
+export type InternalApiV1EntryClaimsResponse = {
+  claims?: {
+    [key: string]: unknown;
+  };
 };
 
-export type InternalApiReadinessResponse = {
-  status?: string;
-};
-
-export type InternalApiVersionResponse = {
-  build_date?: string;
-  commit?: string;
-  go_version?: string;
-  platform?: string;
-  version?: string;
+export type InternalApiV1MeResponse = {
+  roles?: Array<string>;
+  subject?: string;
 };
 
 export type InternalApiV1PublishEntryRequest = {
   claims?: {
     [key: string]: unknown;
   };
+  plugin?: GithubComStacklokToolhiveRegistryServerInternalServicePlugin;
   server?: V0ServerJson;
   skill?: GithubComStacklokToolhiveRegistryServerInternalServiceSkill;
 };
 
 export type InternalApiV1RegistryListResponse = {
   registries?: Array<GithubComStacklokToolhiveRegistryServerInternalServiceRegistryInfo>;
+};
+
+export type InternalApiV1UpdateEntryClaimsRequest = {
+  claims?: {
+    [key: string]: unknown;
+  };
+};
+
+export type InternalApiXPluginsPluginListMetadata = {
+  count?: number;
+  nextCursor?: string;
+};
+
+export type InternalApiXPluginsPluginListResponse = {
+  metadata?: InternalApiXPluginsPluginListMetadata;
+  plugins?: Array<RegistryPlugin>;
 };
 
 export type InternalApiXSkillsSkillListMetadata = {
@@ -242,10 +464,21 @@ export type InternalApiXSkillsSkillListResponse = {
 };
 
 export type ModelArgument = {
+  choices?: Array<string>;
+  default?: string;
+  description?: string;
+  format?: ModelFormat;
   isRepeated?: boolean;
+  isRequired?: boolean;
+  isSecret?: boolean;
   name?: string;
+  placeholder?: string;
   type?: ModelArgumentType;
+  value?: string;
   valueHint?: string;
+  variables?: {
+    [key: string]: ModelInput;
+  };
 };
 
 export type ModelArgumentType = "positional" | "named";
@@ -271,7 +504,18 @@ export type ModelInput = {
 };
 
 export type ModelKeyValueInput = {
+  choices?: Array<string>;
+  default?: string;
+  description?: string;
+  format?: ModelFormat;
+  isRequired?: boolean;
+  isSecret?: boolean;
   name?: string;
+  placeholder?: string;
+  value?: string;
+  variables?: {
+    [key: string]: ModelInput;
+  };
 };
 
 export type ModelPackage = {
@@ -295,11 +539,11 @@ export type ModelPackage = {
    */
   packageArguments?: Array<ModelArgument>;
   /**
-   * RegistryBaseURL is the base URL of the package registry (used by npm, pypi, nuget; not used by oci, mcpb)
+   * RegistryBaseURL is the base URL of the package registry (used by npm, pypi, nuget, cargo; not used by oci, mcpb)
    */
   registryBaseUrl?: string;
   /**
-   * RegistryType indicates how to download packages (e.g., "npm", "pypi", "oci", "nuget", "mcpb")
+   * RegistryType indicates how to download packages (e.g., "npm", "pypi", "cargo", "oci", "nuget", "mcpb")
    */
   registryType?: string;
   /**
@@ -336,6 +580,65 @@ export type ModelTransport = {
   variables?: {
     [key: string]: ModelInput;
   };
+};
+
+export type RegistryPlugin = {
+  /**
+   * Meta is an opaque payload with extended meta data details of the plugin.
+   */
+  _meta?: {
+    [key: string]: unknown;
+  };
+  /**
+   * Description is the description of the plugin.
+   */
+  description?: string;
+  /**
+   * Icons is the list of icons for the plugin.
+   */
+  icons?: Array<RegistrySkillIcon>;
+  /**
+   * License is the SPDX license identifier of the plugin.
+   */
+  license?: string;
+  /**
+   * Metadata is the official metadata of the plugin as reported in the
+   * plugin manifest file.
+   */
+  metadata?: {
+    [key: string]: unknown;
+  };
+  /**
+   * Name is the name of the plugin.
+   * The format is that of identifiers, e.g. "my-plugin".
+   */
+  name?: string;
+  /**
+   * Namespace is the namespace of the plugin.
+   * The format is reverse-DNS, e.g. "io.github.user".
+   */
+  namespace?: string;
+  /**
+   * Packages is the list of packages for the plugin.
+   */
+  packages?: Array<RegistrySkillPackage>;
+  repository?: RegistrySkillRepository;
+  /**
+   * Status is the status of the plugin.
+   * Can be one of "active", "deprecated", or "archived".
+   */
+  status?: string;
+  /**
+   * Title is the title of the plugin.
+   * This is for human consumption, not an identifier.
+   */
+  title?: string;
+  /**
+   * Version is the version of the plugin.
+   * Any non-empty string is valid, but ideally it should be either a
+   * semantic version or a commit hash.
+   */
+  version?: string;
 };
 
 export type RegistrySkill = {
@@ -523,22 +826,6 @@ export type V0ServerResponse = {
   server?: V0ServerJson;
 };
 
-export type GetHealthData = {
-  body?: never;
-  path?: never;
-  query?: never;
-  url: "/health";
-};
-
-export type GetHealthResponses = {
-  /**
-   * OK
-   */
-  200: InternalApiHealthResponse;
-};
-
-export type GetHealthResponse = GetHealthResponses[keyof GetHealthResponses];
-
 export type GetOpenapiJsonData = {
   body?: never;
   path?: never;
@@ -570,38 +857,8 @@ export type GetOpenapiJsonResponses = {
 export type GetOpenapiJsonResponse =
   GetOpenapiJsonResponses[keyof GetOpenapiJsonResponses];
 
-export type GetReadinessData = {
-  body?: never;
-  path?: never;
-  query?: never;
-  url: "/readiness";
-};
-
-export type GetReadinessErrors = {
-  /**
-   * Service Unavailable
-   */
-  503: {
-    [key: string]: string;
-  };
-};
-
-export type GetReadinessError = GetReadinessErrors[keyof GetReadinessErrors];
-
-export type GetReadinessResponses = {
-  /**
-   * OK
-   */
-  200: InternalApiReadinessResponse;
-};
-
-export type GetReadinessResponse =
-  GetReadinessResponses[keyof GetReadinessResponses];
-
 export type GetRegistryByRegistryNameV01ServersData = {
-  body?: {
-    [key: string]: unknown;
-  };
+  body?: never;
   path: {
     /**
      * Registry name
@@ -664,9 +921,7 @@ export type GetRegistryByRegistryNameV01ServersResponse =
   GetRegistryByRegistryNameV01ServersResponses[keyof GetRegistryByRegistryNameV01ServersResponses];
 
 export type GetRegistryByRegistryNameV01ServersByServerNameVersionsData = {
-  body?: {
-    [key: string]: unknown;
-  };
+  body?: never;
   path: {
     /**
      * Registry name
@@ -717,9 +972,7 @@ export type GetRegistryByRegistryNameV01ServersByServerNameVersionsResponse =
 
 export type GetRegistryByRegistryNameV01ServersByServerNameVersionsByVersionData =
   {
-    body?: {
-      [key: string]: unknown;
-    };
+    body?: never;
     path: {
       /**
        * Registry name
@@ -774,10 +1027,240 @@ export type GetRegistryByRegistryNameV01ServersByServerNameVersionsByVersionResp
 export type GetRegistryByRegistryNameV01ServersByServerNameVersionsByVersionResponse =
   GetRegistryByRegistryNameV01ServersByServerNameVersionsByVersionResponses[keyof GetRegistryByRegistryNameV01ServersByServerNameVersionsByVersionResponses];
 
-export type GetRegistryByRegistryNameV01xDevToolhiveSkillsData = {
-  body?: {
-    [key: string]: unknown;
+export type GetRegistryByRegistryNameV01xDevToolhivePluginsData = {
+  body?: never;
+  path: {
+    /**
+     * Registry name
+     */
+    registryName: string;
   };
+  query?: {
+    /**
+     * Filter by name/description substring
+     */
+    search?: string;
+    /**
+     * Filter by status (comma-separated, e.g. active,deprecated)
+     */
+    status?: string;
+    /**
+     * Max results (default 50, max 100)
+     */
+    limit?: number;
+    /**
+     * Pagination cursor
+     */
+    cursor?: string;
+  };
+  url: "/registry/{registryName}/v0.1/x/dev.toolhive/plugins";
+};
+
+export type GetRegistryByRegistryNameV01xDevToolhivePluginsErrors = {
+  /**
+   * Bad request
+   */
+  400: {
+    [key: string]: string;
+  };
+  /**
+   * Internal server error
+   */
+  500: {
+    [key: string]: string;
+  };
+};
+
+export type GetRegistryByRegistryNameV01xDevToolhivePluginsError =
+  GetRegistryByRegistryNameV01xDevToolhivePluginsErrors[keyof GetRegistryByRegistryNameV01xDevToolhivePluginsErrors];
+
+export type GetRegistryByRegistryNameV01xDevToolhivePluginsResponses = {
+  /**
+   * List of plugins
+   */
+  200: InternalApiXPluginsPluginListResponse;
+};
+
+export type GetRegistryByRegistryNameV01xDevToolhivePluginsResponse =
+  GetRegistryByRegistryNameV01xDevToolhivePluginsResponses[keyof GetRegistryByRegistryNameV01xDevToolhivePluginsResponses];
+
+export type GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameData =
+  {
+    body?: never;
+    path: {
+      /**
+       * Registry name
+       */
+      registryName: string;
+      /**
+       * Plugin namespace (reverse-DNS)
+       */
+      namespace: string;
+      /**
+       * Plugin name
+       */
+      name: string;
+    };
+    query?: never;
+    url: "/registry/{registryName}/v0.1/x/dev.toolhive/plugins/{namespace}/{name}";
+  };
+
+export type GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameErrors =
+  {
+    /**
+     * Bad request
+     */
+    400: {
+      [key: string]: string;
+    };
+    /**
+     * Plugin not found
+     */
+    404: {
+      [key: string]: string;
+    };
+    /**
+     * Internal server error
+     */
+    500: {
+      [key: string]: string;
+    };
+  };
+
+export type GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameError =
+  GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameErrors[keyof GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameErrors];
+
+export type GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameResponses =
+  {
+    /**
+     * Plugin details
+     */
+    200: RegistryPlugin;
+  };
+
+export type GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameResponse =
+  GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameResponses[keyof GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameResponses];
+
+export type GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameVersionsData =
+  {
+    body?: never;
+    path: {
+      /**
+       * Registry name
+       */
+      registryName: string;
+      /**
+       * Plugin namespace (reverse-DNS)
+       */
+      namespace: string;
+      /**
+       * Plugin name
+       */
+      name: string;
+    };
+    query?: never;
+    url: "/registry/{registryName}/v0.1/x/dev.toolhive/plugins/{namespace}/{name}/versions";
+  };
+
+export type GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameVersionsErrors =
+  {
+    /**
+     * Bad request
+     */
+    400: {
+      [key: string]: string;
+    };
+    /**
+     * Plugin not found
+     */
+    404: {
+      [key: string]: string;
+    };
+    /**
+     * Internal server error
+     */
+    500: {
+      [key: string]: string;
+    };
+  };
+
+export type GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameVersionsError =
+  GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameVersionsErrors[keyof GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameVersionsErrors];
+
+export type GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameVersionsResponses =
+  {
+    /**
+     * List of plugin versions
+     */
+    200: InternalApiXPluginsPluginListResponse;
+  };
+
+export type GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameVersionsResponse =
+  GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameVersionsResponses[keyof GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameVersionsResponses];
+
+export type GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameVersionsByVersionData =
+  {
+    body?: never;
+    path: {
+      /**
+       * Registry name
+       */
+      registryName: string;
+      /**
+       * Plugin namespace (reverse-DNS)
+       */
+      namespace: string;
+      /**
+       * Plugin name
+       */
+      name: string;
+      /**
+       * Plugin version
+       */
+      version: string;
+    };
+    query?: never;
+    url: "/registry/{registryName}/v0.1/x/dev.toolhive/plugins/{namespace}/{name}/versions/{version}";
+  };
+
+export type GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameVersionsByVersionErrors =
+  {
+    /**
+     * Bad request
+     */
+    400: {
+      [key: string]: string;
+    };
+    /**
+     * Plugin or version not found
+     */
+    404: {
+      [key: string]: string;
+    };
+    /**
+     * Internal server error
+     */
+    500: {
+      [key: string]: string;
+    };
+  };
+
+export type GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameVersionsByVersionError =
+  GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameVersionsByVersionErrors[keyof GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameVersionsByVersionErrors];
+
+export type GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameVersionsByVersionResponses =
+  {
+    /**
+     * Plugin details
+     */
+    200: RegistryPlugin;
+  };
+
+export type GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameVersionsByVersionResponse =
+  GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameVersionsByVersionResponses[keyof GetRegistryByRegistryNameV01xDevToolhivePluginsByNamespaceByNameVersionsByVersionResponses];
+
+export type GetRegistryByRegistryNameV01xDevToolhiveSkillsData = {
+  body?: never;
   path: {
     /**
      * Registry name
@@ -835,9 +1318,7 @@ export type GetRegistryByRegistryNameV01xDevToolhiveSkillsResponse =
 
 export type GetRegistryByRegistryNameV01xDevToolhiveSkillsByNamespaceByNameData =
   {
-    body?: {
-      [key: string]: unknown;
-    };
+    body?: never;
     path: {
       /**
        * Registry name
@@ -894,9 +1375,7 @@ export type GetRegistryByRegistryNameV01xDevToolhiveSkillsByNamespaceByNameRespo
 
 export type GetRegistryByRegistryNameV01xDevToolhiveSkillsByNamespaceByNameVersionsData =
   {
-    body?: {
-      [key: string]: unknown;
-    };
+    body?: never;
     path: {
       /**
        * Registry name
@@ -953,9 +1432,7 @@ export type GetRegistryByRegistryNameV01xDevToolhiveSkillsByNamespaceByNameVersi
 
 export type GetRegistryByRegistryNameV01xDevToolhiveSkillsByNamespaceByNameVersionsByVersionData =
   {
-    body?: {
-      [key: string]: unknown;
-    };
+    body?: never;
     path: {
       /**
        * Registry name
@@ -1016,7 +1493,7 @@ export type GetRegistryByRegistryNameV01xDevToolhiveSkillsByNamespaceByNameVersi
 
 export type PostV1EntriesData = {
   /**
-   * Entry to publish (server or skill)
+   * Entry to publish (server, skill, or plugin)
    */
   body:
     | {
@@ -1063,10 +1540,77 @@ export type PostV1EntriesResponses = {
 export type PostV1EntriesResponse =
   PostV1EntriesResponses[keyof PostV1EntriesResponses];
 
-export type PutV1EntriesByTypeByNameClaimsData = {
-  body?: {
-    [key: string]: unknown;
+export type GetV1EntriesByTypeByNameClaimsData = {
+  body?: never;
+  path: {
+    /**
+     * Entry Type (server or skill)
+     */
+    type: string;
+    /**
+     * Entry Name
+     */
+    name: string;
   };
+  query?: never;
+  url: "/v1/entries/{type}/{name}/claims";
+};
+
+export type GetV1EntriesByTypeByNameClaimsErrors = {
+  /**
+   * Bad request
+   */
+  400: {
+    [key: string]: string;
+  };
+  /**
+   * Forbidden
+   */
+  403: {
+    [key: string]: string;
+  };
+  /**
+   * Not found
+   */
+  404: {
+    [key: string]: string;
+  };
+  /**
+   * Internal server error
+   */
+  500: {
+    [key: string]: string;
+  };
+  /**
+   * No managed source available
+   */
+  503: {
+    [key: string]: string;
+  };
+};
+
+export type GetV1EntriesByTypeByNameClaimsError =
+  GetV1EntriesByTypeByNameClaimsErrors[keyof GetV1EntriesByTypeByNameClaimsErrors];
+
+export type GetV1EntriesByTypeByNameClaimsResponses = {
+  /**
+   * Entry claims
+   */
+  200: InternalApiV1EntryClaimsResponse;
+};
+
+export type GetV1EntriesByTypeByNameClaimsResponse =
+  GetV1EntriesByTypeByNameClaimsResponses[keyof GetV1EntriesByTypeByNameClaimsResponses];
+
+export type PutV1EntriesByTypeByNameClaimsData = {
+  /**
+   * Claims to set
+   */
+  body:
+    | {
+        [key: string]: unknown;
+      }
+    | InternalApiV1UpdateEntryClaimsRequest;
   path: {
     /**
      * Entry Type (server or skill)
@@ -1089,9 +1633,27 @@ export type PutV1EntriesByTypeByNameClaimsErrors = {
     [key: string]: string;
   };
   /**
-   * Not implemented
+   * Forbidden
    */
-  501: {
+  403: {
+    [key: string]: string;
+  };
+  /**
+   * Not found
+   */
+  404: {
+    [key: string]: string;
+  };
+  /**
+   * Internal server error
+   */
+  500: {
+    [key: string]: string;
+  };
+  /**
+   * No managed source available
+   */
+  503: {
     [key: string]: string;
   };
 };
@@ -1099,13 +1661,21 @@ export type PutV1EntriesByTypeByNameClaimsErrors = {
 export type PutV1EntriesByTypeByNameClaimsError =
   PutV1EntriesByTypeByNameClaimsErrors[keyof PutV1EntriesByTypeByNameClaimsErrors];
 
+export type PutV1EntriesByTypeByNameClaimsResponses = {
+  /**
+   * No Content
+   */
+  204: void;
+};
+
+export type PutV1EntriesByTypeByNameClaimsResponse =
+  PutV1EntriesByTypeByNameClaimsResponses[keyof PutV1EntriesByTypeByNameClaimsResponses];
+
 export type DeleteV1EntriesByTypeByNameVersionsByVersionData = {
-  body?: {
-    [key: string]: unknown;
-  };
+  body?: never;
   path: {
     /**
-     * Entry Type (server or skill)
+     * Entry Type (server, skill, or plugin)
      */
     type: string;
     /**
@@ -1155,10 +1725,35 @@ export type DeleteV1EntriesByTypeByNameVersionsByVersionResponses = {
 export type DeleteV1EntriesByTypeByNameVersionsByVersionResponse =
   DeleteV1EntriesByTypeByNameVersionsByVersionResponses[keyof DeleteV1EntriesByTypeByNameVersionsByVersionResponses];
 
-export type GetV1RegistriesData = {
-  body?: {
-    [key: string]: unknown;
+export type GetV1MeData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/v1/me";
+};
+
+export type GetV1MeErrors = {
+  /**
+   * Unauthorized
+   */
+  401: {
+    [key: string]: string;
   };
+};
+
+export type GetV1MeError = GetV1MeErrors[keyof GetV1MeErrors];
+
+export type GetV1MeResponses = {
+  /**
+   * Caller identity and roles
+   */
+  200: InternalApiV1MeResponse;
+};
+
+export type GetV1MeResponse = GetV1MeResponses[keyof GetV1MeResponses];
+
+export type GetV1RegistriesData = {
+  body?: never;
   path?: never;
   query?: never;
   url: "/v1/registries";
@@ -1187,9 +1782,7 @@ export type GetV1RegistriesResponse =
   GetV1RegistriesResponses[keyof GetV1RegistriesResponses];
 
 export type DeleteV1RegistriesByNameData = {
-  body?: {
-    [key: string]: unknown;
-  };
+  body?: never;
   path: {
     /**
      * Registry Name
@@ -1241,9 +1834,7 @@ export type DeleteV1RegistriesByNameResponse =
   DeleteV1RegistriesByNameResponses[keyof DeleteV1RegistriesByNameResponses];
 
 export type GetV1RegistriesByNameData = {
-  body?: {
-    [key: string]: unknown;
-  };
+  body?: never;
   path: {
     /**
      * Registry Name
@@ -1289,9 +1880,14 @@ export type GetV1RegistriesByNameResponse =
   GetV1RegistriesByNameResponses[keyof GetV1RegistriesByNameResponses];
 
 export type PutV1RegistriesByNameData = {
-  body?: {
-    [key: string]: unknown;
-  };
+  /**
+   * Registry configuration
+   */
+  body:
+    | {
+        [key: string]: unknown;
+      }
+    | GithubComStacklokToolhiveRegistryServerInternalServiceRegistryCreateRequest;
   path: {
     /**
      * Registry Name
@@ -1341,9 +1937,7 @@ export type PutV1RegistriesByNameResponse =
   PutV1RegistriesByNameResponses[keyof PutV1RegistriesByNameResponses];
 
 export type GetV1RegistriesByNameEntriesData = {
-  body?: {
-    [key: string]: unknown;
-  };
+  body?: never;
   path: {
     /**
      * Registry Name
@@ -1389,9 +1983,7 @@ export type GetV1RegistriesByNameEntriesResponse =
   GetV1RegistriesByNameEntriesResponses[keyof GetV1RegistriesByNameEntriesResponses];
 
 export type GetV1SourcesData = {
-  body?: {
-    [key: string]: unknown;
-  };
+  body?: never;
   path?: never;
   query?: never;
   url: "/v1/sources";
@@ -1419,9 +2011,7 @@ export type GetV1SourcesResponse =
   GetV1SourcesResponses[keyof GetV1SourcesResponses];
 
 export type DeleteV1SourcesByNameData = {
-  body?: {
-    [key: string]: unknown;
-  };
+  body?: never;
   path: {
     /**
      * Source Name
@@ -1479,9 +2069,7 @@ export type DeleteV1SourcesByNameResponse =
   DeleteV1SourcesByNameResponses[keyof DeleteV1SourcesByNameResponses];
 
 export type GetV1SourcesByNameData = {
-  body?: {
-    [key: string]: unknown;
-  };
+  body?: never;
   path: {
     /**
      * Source Name
@@ -1527,9 +2115,14 @@ export type GetV1SourcesByNameResponse =
   GetV1SourcesByNameResponses[keyof GetV1SourcesByNameResponses];
 
 export type PutV1SourcesByNameData = {
-  body?: {
-    [key: string]: unknown;
-  };
+  /**
+   * Source configuration
+   */
+  body:
+    | {
+        [key: string]: unknown;
+      }
+    | GithubComStacklokToolhiveRegistryServerInternalServiceSourceCreateRequest;
   path: {
     /**
      * Source Name
@@ -1551,6 +2144,12 @@ export type PutV1SourcesByNameErrors = {
    * Cannot modify config-created source
    */
   403: {
+    [key: string]: string;
+  };
+  /**
+   * Managed source limit reached
+   */
+  409: {
     [key: string]: string;
   };
   /**
@@ -1579,9 +2178,7 @@ export type PutV1SourcesByNameResponse =
   PutV1SourcesByNameResponses[keyof PutV1SourcesByNameResponses];
 
 export type GetV1SourcesByNameEntriesData = {
-  body?: {
-    [key: string]: unknown;
-  };
+  body?: never;
   path: {
     /**
      * Source Name
@@ -1625,19 +2222,3 @@ export type GetV1SourcesByNameEntriesResponses = {
 
 export type GetV1SourcesByNameEntriesResponse =
   GetV1SourcesByNameEntriesResponses[keyof GetV1SourcesByNameEntriesResponses];
-
-export type GetVersionData = {
-  body?: never;
-  path?: never;
-  query?: never;
-  url: "/version";
-};
-
-export type GetVersionResponses = {
-  /**
-   * OK
-   */
-  200: InternalApiVersionResponse;
-};
-
-export type GetVersionResponse = GetVersionResponses[keyof GetVersionResponses];
