@@ -7,14 +7,23 @@ export function RuntimeErrorState({
   kind,
 }: {
   message: string;
-  kind: "unavailable" | "not_found" | "invalid_response";
+  kind:
+    | "unavailable"
+    | "not_found"
+    | "invalid_response"
+    | "invalid_request"
+    | "conflict";
 }) {
   return (
     <Alert variant="destructive" data-testid={`runtime-error-${kind}`}>
       <AlertTitle>
         {kind === "not_found"
           ? "Workload not found"
-          : "ToolHive Runtime unavailable"}
+          : kind === "conflict"
+            ? "Workload name already exists"
+            : kind === "invalid_request"
+              ? "Invalid workload request"
+              : "ToolHive Runtime unavailable"}
       </AlertTitle>
       <AlertDescription>{message}</AlertDescription>
     </Alert>

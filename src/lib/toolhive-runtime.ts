@@ -34,7 +34,38 @@ export interface RuntimeWorkloadDetail {
   group?: string;
 }
 
-export type RuntimeErrorKind = "unavailable" | "not_found" | "invalid_response";
+export interface RuntimeCreateResponse {
+  name: string;
+  port: number;
+}
+
+export interface ContainerWorkloadCreateRequest {
+  mode: "container";
+  name: string;
+  image: string;
+  transport: string;
+  cmd_arguments?: string[];
+  volumes?: string[];
+  network_isolation?: boolean;
+}
+
+export interface RemoteWorkloadCreateRequest {
+  mode: "remote";
+  name: string;
+  url: string;
+  transport: string;
+}
+
+export type RuntimeWorkloadCreateRequest =
+  | ContainerWorkloadCreateRequest
+  | RemoteWorkloadCreateRequest;
+
+export type RuntimeErrorKind =
+  | "unavailable"
+  | "not_found"
+  | "invalid_response"
+  | "invalid_request"
+  | "conflict";
 
 export class ToolHiveRuntimeError extends Error {
   readonly kind: RuntimeErrorKind;
@@ -232,6 +263,117 @@ export async function getRuntimeWorkloadStatus(
     };
   } catch (error) {
     return runtimeErrorResult(error);
+  }
+}
+
+export async function createRuntimeWorkload(
+  request: RuntimeWorkloadCreateRequest,
+): Promise<RuntimeResult<RuntimeCreateResponse>> {
+  try {
+    const body =
+      request.mode === "container"
+        ? {
+            name: request.name,
+            image: request.image,
+            transport: request.transport,
+            ...(request.cmd_arguments?.length
+              ? { cmd_arguments: request.cmd_arguments }
+              : {}),
+            ...(request.volumes?.length ? { volumes: request.volumes } : {}),
+            ...(request.network_isolation === undefined
+              ? {}
+              : { network_isolation: request.network_isolation }),
+          }
+        : {
+            name: request.name,
+            url: request.url,
+            transport: request.transport,
+          };
+    return { ok: true, data: await postCreateRequest(body) };
+  } catch (error) {
+    return runtimeErrorResult(error);
+  }
+}
+
+async function postCreateRequest(
+  body: Record<string, unknown>,
+): Promise<RuntimeCreateResponse> {
+  const baseUrl = runtimeBaseUrl();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  try {
+    let response: Response;
+    try {
+      response = await fetch(`${baseUrl}/api/v1beta/workloads`, {
+        method: "POST",
+        signal: controller.signal,
+        cache: "no-store",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+    } catch {
+      throw new ToolHiveRuntimeError(
+        "unavailable",
+        "ToolHive Runtime is unavailable. Check thv serve and TOOLHIVE_API_BASE_URL.",
+      );
+    }
+
+    let responseText = "";
+    try {
+      responseText = await response.text();
+    } catch {
+      responseText = "";
+    }
+    if (response.status === 400) {
+      throw new ToolHiveRuntimeError(
+        "invalid_request",
+        responseText || "ToolHive rejected the workload request.",
+        response.status,
+      );
+    }
+    if (response.status === 409) {
+      throw new ToolHiveRuntimeError(
+        "conflict",
+        responseText || "A workload with this name already exists.",
+        response.status,
+      );
+    }
+    if (!response.ok) {
+      throw new ToolHiveRuntimeError(
+        "unavailable",
+        `ToolHive Runtime request failed (HTTP ${response.status}).`,
+        response.status,
+      );
+    }
+
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(responseText);
+    } catch {
+      throw new ToolHiveRuntimeError(
+        "invalid_response",
+        "ToolHive Runtime returned invalid JSON.",
+        response.status,
+      );
+    }
+    if (
+      !isObject(parsed) ||
+      typeof parsed.name !== "string" ||
+      typeof parsed.port !== "number"
+    ) {
+      throw new ToolHiveRuntimeError(
+        "invalid_response",
+        "ToolHive Runtime returned an invalid create response.",
+        response.status,
+      );
+    }
+    return { name: parsed.name, port: parsed.port };
+  } finally {
+    clearTimeout(timeout);
   }
 }
 

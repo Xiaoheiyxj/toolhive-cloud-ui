@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  createRuntimeWorkload,
   getRuntimeWorkload,
   getRuntimeWorkloadStatus,
   listRuntimeWorkloads,
@@ -91,5 +92,86 @@ describe("ToolHive Runtime client", () => {
       ok: false,
       kind: "unavailable",
     });
+  });
+
+  it("creates container and remote workloads with the verified request shapes", async () => {
+    process.env.TOOLHIVE_API_BASE_URL = "http://runtime.test";
+    const fetchMock = vi.fn(
+      async (input: string | URL, _init?: RequestInit) => {
+        if (input.toString().endsWith("/api/v1beta/workloads")) {
+          return new Response(
+            JSON.stringify({ name: "created", port: 28190 }),
+            {
+              status: 201,
+            },
+          );
+        }
+        return new Response("not found", { status: 404 });
+      },
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      createRuntimeWorkload({
+        mode: "container",
+        name: "container",
+        image: "docker.io/mcp/filesystem:1.0.2",
+        transport: "stdio",
+        cmd_arguments: ["/projects"],
+        volumes: ["/tmp:/projects:ro"],
+      }),
+    ).resolves.toEqual({ ok: true, data: { name: "created", port: 28190 } });
+    const containerInit = fetchMock.mock.calls[0]?.[1];
+    expect(containerInit?.method).toBe("POST");
+    expect(JSON.parse(String(containerInit?.body))).toEqual({
+      name: "container",
+      image: "docker.io/mcp/filesystem:1.0.2",
+      transport: "stdio",
+      cmd_arguments: ["/projects"],
+      volumes: ["/tmp:/projects:ro"],
+    });
+
+    await expect(
+      createRuntimeWorkload({
+        mode: "remote",
+        name: "remote",
+        url: "http://127.0.0.1:19610/mcp",
+        transport: "streamable-http",
+      }),
+    ).resolves.toEqual({ ok: true, data: { name: "created", port: 28190 } });
+    const remoteInit = fetchMock.mock.calls[1]?.[1];
+    expect(JSON.parse(String(remoteInit?.body))).toEqual({
+      name: "remote",
+      url: "http://127.0.0.1:19610/mcp",
+      transport: "streamable-http",
+    });
+  });
+
+  it("maps Runtime create validation and conflict responses", async () => {
+    process.env.TOOLHIVE_API_BASE_URL = "http://runtime.test";
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(new Response("image is required", { status: 400 }))
+      .mockResolvedValueOnce(
+        new Response("workload already exists", { status: 409 }),
+      );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      createRuntimeWorkload({
+        mode: "container",
+        name: "missing-image",
+        image: "image",
+        transport: "stdio",
+      }),
+    ).resolves.toMatchObject({ ok: false, kind: "invalid_request" });
+    await expect(
+      createRuntimeWorkload({
+        mode: "remote",
+        name: "duplicate",
+        url: "http://127.0.0.1:19610/mcp",
+        transport: "streamable-http",
+      }),
+    ).resolves.toMatchObject({ ok: false, kind: "conflict" });
   });
 });
